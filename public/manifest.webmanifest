@@ -1,0 +1,16 @@
+{
+  "name": "Dayflow - Your Personal Manager",
+  "short_name": "Dayflow",
+  "description": "Atur tugas, jadwal, dan pengingat harianmu.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff1f5",
+  "theme_color": "#ec4899",
+  "lang": "id",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

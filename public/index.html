@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="chic">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dayflow - Your Personal Manager</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#ec4899">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Dayflow">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background-color 0.4s ease, color 0.4s ease;
+            background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        [data-theme="clean"] {
+            --bg-main: #fcfbf9; --dot-color: #e5e0d8; --bg-card: rgba(255, 255, 255, 0.96); --bg-sub: #f6f3ee;
+            --text-main: #2d2725; --text-muted: #8c7a70; --border-color: #e6dfd5; --accent: #9c6b49;
+            --accent-hover: #7f5539; --accent-soft: #f3ece4; --accent-text: #6f482d; --orb-color: rgba(156, 107, 73, 0.08);
+        }
+        [data-theme="chic"] {
+            --bg-main: #fff1f5; --dot-color: #fbcfe8; --bg-card: rgba(255, 255, 255, 0.95); --bg-sub: #ffe4ec;
+            --text-main: #500724; --text-muted: #be185d; --border-color: #fbcfe8; --accent: #ec4899;
+            --accent-hover: #db2777; --accent-soft: #fce7f3; --accent-text: #be185d; --orb-color: rgba(236, 72, 153, 0.14);
+        }
+        [data-theme="dark"] {
+            --bg-main: #0b1120; --dot-color: #1e293b; --bg-card: rgba(30, 41, 59, 0.92); --bg-sub: #1e293b;
+            --text-main: #f8fafc; --text-muted: #94a3b8; --border-color: #334155; --accent: #38bdf8;
+            --accent-hover: #0284c7; --accent-soft: #0c4a6e; --accent-text: #7dd3fc; --orb-color: rgba(56, 189, 248, 0.12);
+        }
+        body { background-color: var(--bg-main); color: var(--text-main); }
+        .theme-card { background-color: var(--bg-card); border-color: var(--border-color); backdrop-filter: blur(10px); }
+        .theme-sub { background-color: var(--bg-sub); border-color: var(--border-color); }
+        .theme-text-muted { color: var(--text-muted); }
+        .theme-accent-bg { background-color: var(--accent); }
+        .theme-accent-bg:hover { background-color: var(--accent-hover); }
+        .theme-accent-soft { background-color: var(--accent-soft); color: var(--accent-text); }
+        .glow-orb { background: radial-gradient(circle, var(--orb-color) 0%, transparent 70%); }
+        @keyframes floatSlow { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-8px) rotate(4deg); } }
+        @keyframes floatReverse { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(8px) rotate(-4deg); } }
+        .animate-float { animation: floatSlow 4.5s ease-in-out infinite; }
+        .animate-float-reverse { animation: floatReverse 5.5s ease-in-out infinite; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-6 px-4 relative overflow-x-hidden">
+
+    <div class="glow-orb fixed -top-24 -left-24 w-96 h-96 rounded-full pointer-events-none -z-10"></div>
+    <div class="glow-orb fixed bottom-0 -right-24 w-96 h-96 rounded-full pointer-events-none -z-10"></div>
+
+    <div id="sideDecorations" class="fixed inset-0 pointer-events-none -z-10 overflow-hidden select-none">
+        <span id="deco-left-1" class="fixed top-24 left-4 md:left-12 text-3xl md:text-4xl opacity-50 animate-float">☕</span>
+        <span id="deco-left-2" class="fixed top-1/2 left-6 md:left-16 text-2xl md:text-3xl opacity-40 animate-float-reverse">🥐</span>
+        <span id="deco-left-3" class="fixed bottom-24 left-4 md:left-14 text-3xl md:text-4xl opacity-50 animate-float">🍫</span>
+        <span id="deco-right-1" class="fixed top-28 right-4 md:right-12 text-3xl md:text-4xl opacity-50 animate-float-reverse">🍰</span>
+        <span id="deco-right-2" class="fixed top-1/2 right-6 md:right-16 text-2xl md:text-3xl opacity-40 animate-float">🍪</span>
+        <span id="deco-right-3" class="fixed bottom-28 right-4 md:right-14 text-3xl md:text-4xl opacity-50 animate-float-reverse">🌸</span>
+    </div>
+
+    <div class="max-w-2xl w-full flex flex-wrap justify-between items-center gap-3 mb-6">
+        <div class="flex items-center gap-2.5">
+            <div class="theme-accent-bg text-white w-9 h-9 rounded-xl flex items-center justify-center font-extrabold text-base shadow-sm">✦</div>
+            <div>
+                <span class="font-extrabold text-lg tracking-tight block leading-none">Dayflow</span>
+                <span class="text-[11px] font-semibold theme-text-muted tracking-wide">Your Personal Manager</span>
+            </div>
+        </div>
+        <div class="theme-card border rounded-full p-1 flex items-center gap-1 shadow-xs">
+            <button onclick="setTheme('clean')" id="btn-clean" class="px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer">🏷️ Clean</button>
+            <button onclick="setTheme('chic')" id="btn-chic" class="px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer">☕ Chic</button>
+            <button onclick="setTheme('dark')" id="btn-dark" class="px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer">🌙 Dark</button>
+        </div>
+    </div>
+
+    <div class="max-w-2xl w-full mb-3">
+        <div class="theme-card border rounded-xl px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold theme-text-muted shadow-xs">
+            <span>✨ MK Literasi AI dan Inovasi</span>
+            <span>PJJ Komunikasi • UNSIA</span>
+        </div>
+    </div>
+
+    <div class="max-w-2xl w-full theme-card border rounded-3xl p-6 mb-5 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <p id="greetingBadge" class="inline-block theme-accent-soft text-xs font-bold px-3 py-1 rounded-full mb-2">Halo! 👋</p>
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-snug">Ada tugas atau jadwal apa hari ini?</h1>
+                <p class="theme-text-muted text-sm mt-1">Tulis harian untuk mengatur tugas, jadwal, deadline & pengingat kerjamu di tengah kesibukan!</p>
+            </div>
+            <div id="themeDeco" class="hidden sm:flex flex-col items-center justify-center theme-accent-soft w-20 h-20 rounded-3xl shrink-0 animate-float border border-white/40 shadow-xs text-center">
+                <span id="decoEmoji" class="text-2xl">☕🍰</span>
+                <span id="decoText" class="text-[9px] font-extrabold mt-1 uppercase tracking-wider">Dayflow</span>
+            </div>
+        </div>
+        <div class="mt-5 pt-4 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-semibold theme-text-muted">Gimana energimu hari ini?</span>
+            <div class="flex gap-1.5">
+                <button onclick="pilihMood('semangat')" class="theme-sub hover:opacity-80 border px-2.5 py-1 rounded-full text-xs font-semibold transition cursor-pointer">🔥 Semangat</button>
+                <button onclick="pilihMood('santai')" class="theme-sub hover:opacity-80 border px-2.5 py-1 rounded-full text-xs font-semibold transition cursor-pointer">☕ Santai</button>
+                <button onclick="pilihMood('lelah')" class="theme-sub hover:opacity-80 border px-2.5 py-1 rounded-full text-xs font-semibold transition cursor-pointer">🔋 Butuh Recharge</button>
+            </div>
+        </div>
+        <p id="moodResponse" class="hidden mt-2.5 text-xs font-medium theme-accent-soft px-3 py-2 rounded-xl"></p>
+    </div>
+
+    <div class="max-w-2xl w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+        <button onclick="bukaModalKalender()" class="theme-card border rounded-2xl p-4 shadow-xs flex items-center gap-4 text-left hover:scale-[1.01] active:scale-[0.99] transition cursor-pointer group">
+            <div class="theme-accent-soft w-14 h-14 rounded-2xl flex flex-col items-center justify-center shrink-0 group-hover:scale-105 transition">
+                <span id="calMonth" class="text-[10px] font-bold uppercase tracking-wider">NOV</span>
+                <span id="calDate" class="text-xl font-extrabold leading-none mt-0.5">13</span>
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center justify-between">
+                    <p id="calDay" class="text-xs font-bold uppercase tracking-wider theme-text-muted">Memuat...</p>
+                    <span class="text-[10px] font-bold theme-accent-soft px-2 py-0.5 rounded-full">Buka ↗</span>
+                </div>
+                <p id="liveClock" class="text-xl font-extrabold tracking-tight mt-0.5">--:--:--</p>
+                <p id="tzInfo" class="text-[11px] theme-text-muted mt-0.5">Klik untuk lihat kalender & riwayat</p>
+            </div>
+        </button>
+
+        <div class="theme-card border rounded-2xl p-4 shadow-xs flex items-center gap-4">
+            <div id="weatherIcon" class="theme-accent-soft w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0">⛅</div>
+            <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                    <p class="text-xs font-bold uppercase tracking-wider theme-text-muted">Cuaca Lokasimu</p>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                </div>
+                <p id="weatherTemp" class="text-xl font-extrabold tracking-tight mt-0.5">Mendeteksi...</p>
+                <p id="weatherDesc" class="text-[11px] theme-text-muted mt-0.5">Mencari lokasi...</p>
+                <p id="weatherLoc" class="text-[11px] font-bold mt-0.5 truncate">📍 -</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-2xl w-full theme-card border rounded-2xl p-4 mb-5 shadow-xs">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div>
+                <p class="text-xs font-bold">🔗 Hubungkan Google Calendar</p>
+                <p id="gStatus" class="text-[11px] theme-text-muted mt-0.5">Belum terhubung. Tugas disimpan sebagai file .ics.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="btnGLogin" onclick="hubungkanGoogle()" class="hidden text-xs font-bold theme-accent-bg text-white px-3 py-1.5 rounded-full cursor-pointer">Masuk dengan Google</button>
+                <button id="btnGAtur" onclick="document.getElementById('gSetup').classList.toggle('hidden')" class="text-xs font-bold theme-accent-soft px-3 py-1.5 rounded-full cursor-pointer">Atur (developer)</button>
+            </div>
+        </div>
+        <div id="gSetup" class="hidden mt-3 pt-3 border-t border-slate-200/60 space-y-2.5">
+            <label class="block text-[11px] font-bold theme-text-muted">Google OAuth Client ID</label>
+            <input id="gClientId" type="text" placeholder="xxxxxxxx.apps.googleusercontent.com" class="w-full theme-sub border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-pink-400">
+            <div class="flex gap-2">
+                <button onclick="simpanClientId()" class="flex-1 py-2 theme-accent-bg text-white text-xs font-bold rounded-xl cursor-pointer">Simpan & Hubungkan</button>
+                <button onclick="hapusClientId()" class="theme-sub border text-xs font-bold py-2 px-3 rounded-xl cursor-pointer">Lepas</button>
+            </div>
+            <div class="theme-sub border rounded-xl p-3 text-[11px] theme-text-muted leading-relaxed">
+                <p class="font-bold mb-1">Cara dapat Client ID:</p>
+                <ol class="list-decimal pl-4 space-y-0.5">
+                    <li>Buka console.cloud.google.com, buat project, lalu aktifkan <b>Google Calendar API</b>.</li>
+                    <li>Di OAuth consent screen pilih <b>External</b>, lalu tambahkan emailmu di <b>Test users</b>.</li>
+                    <li>Credentials → Create → OAuth client ID → <b>Web application</b>.</li>
+                    <li>Di <b>Authorized JavaScript origins</b>, isi alamat halaman ini: <b id="gOrigin" class="break-all"></b></li>
+                    <li>Salin Client ID, tempel di atas, lalu simpan.</li>
+                </ol>
+                <p id="gOriginWarn" class="hidden mt-2 font-bold text-rose-500">⚠️ Halaman dibuka dari file langsung. Google menolak alamat ini. Buka lewat server lokal (python -m http.server 8000 → http://localhost:8000) atau hosting.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifikasi Push -->
+    <div class="max-w-2xl w-full theme-card border rounded-2xl p-4 mb-5 shadow-xs">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div>
+                <p class="text-xs font-bold">🔔 Notifikasi Pengingat</p>
+                <p id="pushStatus" class="text-[11px] theme-text-muted mt-0.5">Aktifkan agar pengingat muncul sebagai notifikasi di perangkat ini.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="btnPushOn" onclick="aktifkanPush()" class="text-xs font-bold theme-accent-bg text-white px-3 py-1.5 rounded-full cursor-pointer">Aktifkan</button>
+                <button id="btnPushTes" onclick="tesPush()" class="hidden text-xs font-bold theme-accent-soft px-3 py-1.5 rounded-full cursor-pointer">Tes</button>
+                <button id="btnPushOff" onclick="matikanPush()" class="hidden text-xs font-bold theme-sub border px-3 py-1.5 rounded-full cursor-pointer">Matikan</button>
+            </div>
+        </div>
+        <p id="pushIosHint" class="hidden mt-2.5 text-[11px] font-medium theme-accent-soft px-3 py-2 rounded-xl">📱 iPhone/iPad: buka Dayflow di Safari, tekan tombol Bagikan → <b>Tambah ke Layar Utama</b>, lalu buka Dayflow dari ikon itu dan aktifkan notifikasi.</p>
+        <p class="text-[10px] theme-text-muted mt-2">Notifikasi muncul di perangkat ini walau Dayflow sedang ditutup, tanpa nomor HP. Untuk perangkat lain, aktifkan juga di perangkat itu.</p>
+    </div>
+
+    <div class="max-w-2xl w-full theme-card border rounded-3xl p-6 mb-5 shadow-sm">
+        <label class="block text-sm font-bold mb-2">📝 Deskripsi Tugas</label>
+        <textarea id="userInput" rows="2" class="w-full theme-sub border rounded-2xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 transition resize-none mb-3" placeholder="Tulis deskripsi tugasnya saja..."></textarea>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+                <label class="block text-xs font-bold theme-text-muted mb-1">📅 Tanggal</label>
+                <input id="taskDate" type="date" class="w-full theme-sub border rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-pink-400 cursor-pointer">
+            </div>
+            <div>
+                <label class="block text-xs font-bold theme-text-muted mb-1">🕐 Jam</label>
+                <input id="taskTime" type="time" class="w-full theme-sub border rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-pink-400 cursor-pointer">
+            </div>
+        </div>
+        <div class="mb-4">
+            <label class="block text-xs font-bold theme-text-muted mb-1">📍 Lokasi (opsional)</label>
+            <input id="taskLokasi" type="text" class="w-full theme-sub border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400">
+        </div>
+        <div class="mb-4 theme-sub p-3.5 rounded-2xl border flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-semibold">⏰ Mau diingetin berapa lama sebelum deadline?</span>
+            <select id="reminderTime" class="theme-card border text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none cursor-pointer">
+                <option value="15">15 Menit Sebelumnya</option>
+                <option value="30">30 Menit Sebelumnya</option>
+                <option value="60">1 Jam Sebelumnya</option>
+                <option value="120" selected>2 Jam Sebelumnya</option>
+                <option value="180">3 Jam Sebelumnya</option>
+                <option value="360">6 Jam Sebelumnya</option>
+            </select>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <button onclick="prosesJadwal()" class="flex-1 py-2.5 theme-accent-bg text-white text-sm font-bold rounded-xl shadow-sm transition cursor-pointer">Atur Tugas & Jadwal 🚀</button>
+        </div>
+    </div>
+
+    <div class="max-w-2xl w-full mb-6">
+        <div class="flex items-center justify-between mb-3 px-1 gap-2 flex-wrap">
+            <h2 class="text-xs font-bold theme-text-muted uppercase tracking-wider">Daftar Tugas, Deadline & Reminder</h2>
+            <div class="flex items-center gap-3">
+                <button id="btnExportAll" onclick="simpanSemua()" class="hidden text-xs font-bold theme-accent-soft px-2.5 py-1 rounded-full cursor-pointer">📥 Simpan semua ke kalender</button>
+                <button onclick="bukaModalKalender()" class="text-xs font-bold theme-text-muted hover:underline cursor-pointer">📅 Riwayat</button>
+            </div>
+        </div>
+        <div id="taskList" class="space-y-3"></div>
+        <p id="icsHint" class="hidden text-[11px] theme-text-muted mt-3 px-1">
+            💡 File .ics sudah membawa reminder. Buka di HP (otomatis ke Google Calendar) atau impor lewat calendar.google.com → Setelan → Impor.
+        </p>
+    </div>
+
+    <div class="max-w-2xl w-full theme-card border rounded-2xl p-4 mb-6 shadow-xs flex items-center justify-between gap-4">
+        <div class="flex items-start gap-3">
+            <span class="text-xl mt-0.5">💡</span>
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider theme-text-muted">Dayflow Spark • Penyemangat Hari Ini</p>
+                <p id="dailyQuote" class="text-xs font-medium italic mt-0.5">"Tulis harianmu, selesaikan tugasmu tepat waktu tanpa stres."</p>
+            </div>
+        </div>
+        <button onclick="gantiQuote()" title="Ganti Kutipan" class="theme-sub hover:opacity-80 border p-2 rounded-xl text-xs font-bold shrink-0 cursor-pointer transition">🔄</button>
+    </div>
+
+    <div class="max-w-2xl w-full text-center py-6 mb-4 border-t border-slate-200/60">
+        <p class="text-xs font-bold theme-text-muted">Dayflow • Project Kelompok 4 • Batch 13 KMB 102</p>
+        <p class="text-[11px] theme-text-muted mt-0.5">MK Literasi AI dan Inovasi • Prodi PJJ Komunikasi • Universitas Siber Asia (UNSIA)</p>
+    </div>
+
+    <div id="calendarModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
+        <div class="theme-card border rounded-3xl max-w-md w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="font-extrabold text-lg">Dayflow Kalender & Riwayat 📅</h3>
+                    <p class="text-xs theme-text-muted">Klik tanggal bertanda titik untuk cek daftar tugas & deadline</p>
+                </div>
+                <button onclick="tutupModalKalender()" class="theme-sub w-8 h-8 rounded-full font-bold text-lg flex items-center justify-center cursor-pointer">×</button>
+            </div>
+            <div class="flex items-center justify-between theme-sub rounded-2xl p-2.5 mb-4 border">
+                <button onclick="gantiBulan(-1)" class="px-3 py-1 rounded-xl font-bold text-sm hover:opacity-75 cursor-pointer">◀</button>
+                <span id="modalMonthYear" class="font-extrabold text-sm">November 2026</span>
+                <button onclick="gantiBulan(1)" class="px-3 py-1 rounded-xl font-bold text-sm hover:opacity-75 cursor-pointer">▶</button>
+            </div>
+            <div class="grid grid-cols-7 text-center text-[11px] font-bold theme-text-muted mb-2">
+                <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+            </div>
+            <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 text-center mb-5"></div>
+            <div class="border-t border-slate-200/60 pt-4">
+                <p id="selectedDateLabel" class="text-xs font-extrabold uppercase tracking-wider theme-text-muted mb-2">Riwayat Tugas Tanggal Terpilih</p>
+                <div id="historyDetailBox" class="space-y-2 text-xs">
+                    <div class="theme-sub rounded-xl p-3 theme-text-muted text-center">Pilih salah satu tanggal di kalender atas untuk melihat daftar tugas.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="waPopup" class="fixed bottom-5 right-5 bg-emerald-600 text-white p-4 rounded-2xl shadow-2xl max-w-sm hidden transform transition-all duration-300 translate-y-10 opacity-0 z-50">
+        <div class="flex items-start gap-3">
+            <div class="bg-white text-emerald-600 p-2 rounded-full font-bold text-xs">🔔</div>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-emerald-200">Dayflow (Your Personal Manager)</p>
+                <p id="waMessage" class="text-sm font-medium mt-1">Halo! Mengingatkan tugas...</p>
+            </div>
+            <button onclick="tutupNotif()" class="ml-auto text-emerald-200 hover:text-white font-bold text-lg cursor-pointer">×</button>
+        </div>
+    </div>
+
+    <script>
+        function esc(s) {
+            return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+        function pad(n) { return String(n).padStart(2, '0'); }
+
+        const NAMA_HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const NAMA_BULAN_PENDEK = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
+        const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        const TZ_NAME = (() => {
+            try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; }
+            catch (e) { return 'UTC'; }
+        })();
+        function tzShort() {
+            try {
+                const part = new Intl.DateTimeFormat('id-ID', { timeZone: TZ_NAME, timeZoneName: 'short' })
+                    .formatToParts(new Date()).find(p => p.type === 'timeZoneName');
+                return part ? part.value : TZ_NAME;
+            } catch (e) { return TZ_NAME; }
+        }
+        let tzLabel = tzShort();
+
+        /* ===================== Tema ===================== */
+        function setTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            localStorage.setItem('dayflow_theme', themeName);
+            ['clean', 'chic', 'dark'].forEach(t => {
+                const btn = document.getElementById('btn-' + t);
+                if (t === themeName) btn.classList.add('theme-accent-bg', 'text-white');
+                else btn.classList.remove('theme-accent-bg', 'text-white');
+            });
+            const set = {
+                clean: ["🏷️✨", "Minimalist", ["🏷️","📄","🕯️"], ["✨","📋","🪴"]],
+                chic: ["☕🍰", "Dayflow", ["☕","🥐","🍫"], ["🍰","🍪","🌸"]],
+                dark: ["🌙⭐", "Sleek Dark", ["🌙","✨","🪐"], ["⭐","💫","🌌"]]
+            }[themeName];
+            document.getElementById('decoEmoji').innerText = set[0];
+            document.getElementById('decoText').innerText = set[1];
+            set[2].forEach((e, i) => document.getElementById('deco-left-' + (i + 1)).innerText = e);
+            set[3].forEach((e, i) => document.getElementById('deco-right-' + (i + 1)).innerText = e);
+        }
+        setTheme(localStorage.getItem('dayflow_theme') || 'chic');
+
+        function pilihMood(mood) {
+            const box = document.getElementById('moodResponse');
+            box.classList.remove('hidden');
+            if (mood === 'semangat') box.innerText = "🔥 Mantap! Tugas-tugas pasti beres tepat waktu hari ini!";
+            else if (mood === 'santai') box.innerText = "☕ Kerjain tugasnya santai tapi fokus ya. Dayflow siap bantu ingetin.";
+            else box.innerText = "🔋 Istirahat dulu sebentar kalau capek. Nanti kita cicil lagi tugasnya!";
+        }
+
+        const quotes = [
+            "\"Tulis harianmu, selesaikan tugasmu tepat waktu tanpa stres.\"",
+            "\"Deadline bukan buat ditakutin, tapi buat diatur jadwalnya bareng Dayflow.\"",
+            "\"Satu tugas beres hari selangkah lebih dekat ke wisuda UNSIA!\"",
+            "\"Serahin urusan pengingat ke Dayflow, kamu fokus kerjain tugasnya ya!\""
+        ];
+        function gantiQuote() {
+            document.getElementById('dailyQuote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+        }
+
+        /* ===================== Jam & Sapaan ===================== */
+        function updateClockAndGreeting() {
+            const now = new Date();
+            const hours = now.getHours();
+            let sapaan;
+            if (hours >= 4 && hours < 11) sapaan = "Selamat Pagi! ☀️";
+            else if (hours >= 11 && hours < 15) sapaan = "Selamat Siang! 🌤️";
+            else if (hours >= 15 && hours < 18) sapaan = "Selamat Sore! 🌇";
+            else sapaan = "Selamat Malam! 🌙";
+            document.getElementById('greetingBadge').innerText = sapaan;
+            document.getElementById('calMonth').innerText = NAMA_BULAN_PENDEK[now.getMonth()];
+            document.getElementById('calDate').innerText = pad(now.getDate());
+            document.getElementById('calDay').innerText = `${NAMA_HARI[now.getDay()]}, ${now.getFullYear()}`;
+            document.getElementById('liveClock').innerText = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} ${tzLabel}`;
+            document.getElementById('tzInfo').innerText = `Zona waktu: ${TZ_NAME.replace('_', ' ')}`;
+        }
+        setInterval(updateClockAndGreeting, 1000);
+        updateClockAndGreeting();
+
+        /* ===================== Cuaca ===================== */
+        let lastCoords = null;
+        let lastPlace = null;
+        function setWeatherLocation(text) { document.getElementById('weatherLoc').innerText = `📍 ${text}`; }
+
+        async function reverseGeocode(lat, lon) {
+            try {
+                const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`);
+                const d = await res.json();
+                const city = d.city || d.locality || d.principalSubdivision || '';
+                return [city, d.countryName || ''].filter(Boolean).join(', ');
+            } catch (e) { return ''; }
+        }
+
+        async function lokasiDariIP() {
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const d = await res.json();
+                if (d.latitude && d.longitude) return { lat: d.latitude, lon: d.longitude, place: [d.city, d.country_name].filter(Boolean).join(', ') };
+            } catch (e) {}
+            try {
+                const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                const d = await res.json();
+                if (d.latitude && d.longitude) return { lat: parseFloat(d.latitude), lon: parseFloat(d.longitude), place: [d.city, d.country].filter(Boolean).join(', ') };
+            } catch (e) {}
+            return null;
+        }
+
+        async function fetchWeather() {
+            const pakaiIP = async () => {
+                const loc = await lokasiDariIP();
+                if (loc) {
+                    lastCoords = { lat: loc.lat, lon: loc.lon };
+                    lastPlace = loc.place;
+                    loadWeatherAPI();
+                } else {
+                    document.getElementById('weatherTemp').innerText = "--°C";
+                    document.getElementById('weatherDesc').innerText = "Lokasi tidak terdeteksi";
+                    setWeatherLocation('Izinkan akses lokasi di browser');
+                }
+            };
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    lastCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                    lastPlace = await reverseGeocode(lastCoords.lat, lastCoords.lon);
+                    loadWeatherAPI();
+                }, pakaiIP, { timeout: 8000 });
+            } else pakaiIP();
+        }
+
+        async function loadWeatherAPI() {
+            if (!lastCoords) return;
+            const { lat, lon } = lastCoords;
+            try {
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`);
+                const data = await res.json();
+                const temp = Math.round(data.current_weather.temperature);
+                const code = data.current_weather.weathercode;
+                let icon = "☀️", desc = "Cerah";
+                if (code >= 1 && code <= 3) { icon = "⛅"; desc = "Cerah berawan"; }
+                else if (code === 45 || code === 48) { icon = "🌫️"; desc = "Berkabut"; }
+                else if (code >= 51 && code <= 57) { icon = "🌦️"; desc = "Gerimis"; }
+                else if (code >= 61 && code <= 67) { icon = "🌧️"; desc = "Hujan"; }
+                else if (code >= 71 && code <= 77) { icon = "❄️"; desc = "Salju"; }
+                else if (code >= 80 && code <= 82) { icon = "🌧️"; desc = "Hujan deras"; }
+                else if (code >= 85 && code <= 86) { icon = "❄️"; desc = "Hujan salju"; }
+                else if (code >= 95) { icon = "⛈️"; desc = "Badai petir"; }
+                document.getElementById('weatherIcon').innerText = icon;
+                document.getElementById('weatherTemp').innerText = `${temp}°C`;
+                document.getElementById('weatherDesc').innerText = desc;
+                setWeatherLocation(lastPlace || `${lat.toFixed(2)}, ${lon.toFixed(2)}`);
+            } catch (e) {
+                document.getElementById('weatherTemp').innerText = "--°C";
+                document.getElementById('weatherDesc').innerText = "Gagal memuat cuaca";
+                setWeatherLocation(lastPlace || '-');
+            }
+        }
+        fetchWeather();
+        setInterval(loadWeatherAPI, 15 * 60 * 1000);
+
+        /* ===================== Riwayat (LocalStorage) ===================== */
+        function getDateKey(dateObj) {
+            return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}`;
+        }
+        function initHistoryStorage() {
+            let saved = {};
+            try { saved = JSON.parse(localStorage.getItem('dayflow_history') || '{}'); } catch (e) {}
+            const now = new Date();
+            const sampleKey = getDateKey(new Date(now.getFullYear(), now.getMonth(), 10));
+            if (!saved[sampleKey]) {
+                saved[sampleKey] = [{
+                    curhat: "Kerja kelompok MK Literasi AI dan Inovasi bahas fitur Dayflow",
+                    acara: "Diskusi Kelompok 4", jam: "19:30", lokasi: "Zoom Meeting", reminder: "1 jam"
+                }];
+                try { localStorage.setItem('dayflow_history', JSON.stringify(saved)); } catch (e) {}
+            }
+            return saved;
+        }
+        let historyData = initHistoryStorage();
+
+        function formatDurasi(menit) {
+            menit = parseInt(menit);
+            if (menit < 60) return `${menit} menit`;
+            return `${menit / 60} jam`;
+        }
+        function labelTanggal(d) { return `${NAMA_HARI[d.getDay()]}, ${d.getDate()} ${NAMA_BULAN[d.getMonth()]}`; }
+        function labelJam(t) { return `${pad(t.jam)}:${pad(t.menit)}`; }
+
+        /* ===================== Daftar tugas ===================== */
+        let currentTasks = [];
+        const WARNA_BAR = ['bg-pink-500', 'bg-amber-500', 'bg-rose-500', 'bg-emerald-500', 'bg-sky-500', 'bg-violet-500'];
+
+        function hapusTugas(i) {
+            batalPush(currentTasks[i]);
+            currentTasks.splice(i, 1);
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            const btnAll = document.getElementById('btnExportAll');
+            const hint = document.getElementById('icsHint');
+            if (currentTasks.length === 0) {
+                taskList.innerHTML = `
+                    <div class="theme-card border border-dashed rounded-2xl p-8 text-center theme-text-muted text-sm">
+                        Belum ada tugas. Isi form di atas lalu tekan "Atur Tugas &amp; Jadwal".
+                    </div>`;
+                btnAll.classList.add('hidden');
+                hint.classList.add('hidden');
+                return;
+            }
+            btnAll.classList.remove('hidden');
+            if (pakaiGoogle()) hint.classList.add('hidden'); else hint.classList.remove('hidden');
+
+            taskList.innerHTML = currentTasks.map((t, i) => `
+                <div class="theme-card border rounded-2xl p-4 shadow-xs relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1.5 h-full ${WARNA_BAR[i % WARNA_BAR.length]}"></div>
+                    <div class="pl-2">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <span class="text-xs font-bold theme-accent-soft px-2.5 py-0.5 rounded-full">${labelTanggal(t.date)}</span>
+                            <span class="text-xs font-bold theme-accent-soft px-2.5 py-0.5 rounded-full">Jam ${labelJam(t)} ${esc(tzLabel)}${t.jamDefault ? ' (default)' : ''}</span>
+                        </div>
+                        <h3 class="font-bold text-base mt-1.5">${esc(t.judul)}</h3>
+                        <p class="text-xs theme-text-muted mt-0.5">📍 <b>Lokasi:</b> ${esc(t.lokasi)}</p>
+                        <p class="text-xs theme-text-muted mt-0.5">🤖 <b>Dayflow AI:</b> Reminder ${formatDurasi(t.reminder)} sebelumnya</p>
+                        ${t.pushStatus ? `<p class="text-xs theme-text-muted mt-0.5">🔔 <b>Push:</b> ${esc(t.pushStatus)}</p>` : ''}
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-2 pt-3 border-t border-slate-200/60 pl-2">
+                        <button onclick="kirimPush(${i})" class="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 text-xs font-bold py-2.5 px-3 rounded-xl transition cursor-pointer">
+                            🔔 Jadwalkan Notifikasi
+                        </button>
+                        <button onclick="syncKalender(currentTasks[${i}])" class="flex-1 theme-accent-soft hover:opacity-80 text-xs font-bold py-2.5 px-3 rounded-xl transition text-center cursor-pointer">
+                            📅 Simpan ke Kalender
+                        </button>
+                        <button onclick="hapusTugas(${i})" title="Hapus dari daftar" class="theme-sub border text-xs font-bold py-2.5 px-3 rounded-xl hover:opacity-80 cursor-pointer">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /* ===================== Kalender (.ics) ===================== */
+        function icsEscape(s) {
+            return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+        }
+        function fmtLokal(d) {
+            return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+        }
+        function fmtUTC(d) {
+            return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+        }
+        function buatVEvent(t, idx) {
+            const mulai = new Date(t.date.getFullYear(), t.date.getMonth(), t.date.getDate(), t.jam, t.menit);
+            const selesai = new Date(mulai.getTime() + 60 * 60 * 1000);
+            const uid = `${mulai.getTime()}-${idx}-${Math.random().toString(36).slice(2, 8)}@dayflow`;
+            return [
+                'BEGIN:VEVENT', `UID:${uid}`, `DTSTAMP:${fmtUTC(new Date())}`,
+                `DTSTART;TZID=${TZ_NAME}:${fmtLokal(mulai)}`, `DTEND;TZID=${TZ_NAME}:${fmtLokal(selesai)}`,
+                `SUMMARY:${icsEscape(t.judul)}`, `LOCATION:${icsEscape(t.lokasi === '-' ? '' : t.lokasi)}`,
+                `DESCRIPTION:${icsEscape('Diatur oleh Dayflow - ' + t.asli)}`,
+                'BEGIN:VALARM', `TRIGGER:-PT${parseInt(t.reminder)}M`, 'ACTION:DISPLAY',
+                `DESCRIPTION:${icsEscape('Pengingat: ' + t.judul)}`, 'END:VALARM', 'END:VEVENT'
+            ].join('\r\n');
+        }
+        function unduhFileICS(tasks, namaFile) {
+            const isi = [
+                'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Dayflow//Personal Manager//ID', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+                ...tasks.map((t, i) => buatVEvent(t, i)), 'END:VCALENDAR'
+            ].join('\r\n');
+            const blob = new Blob([isi], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = namaFile;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+        function unduhSemuaICS() {
+            if (!currentTasks.length) return;
+            unduhFileICS(currentTasks, 'dayflow-jadwal.ics');
+        }
+
+        /* ===================== Google Calendar ===================== */
+        // DEVELOPER: tempel Client ID di sini (cukup sekali). Pengguna lain tinggal klik "Masuk dengan Google".
+        const GOOGLE_CLIENT_ID_DEFAULT = '195960569938-l8sepmfqhfdjs55022856lmc3u62bihi.apps.googleusercontent.com';
+        let googleEmail = '';
+
+        function ambilClientId() {
+            if (GOOGLE_CLIENT_ID_DEFAULT.trim()) return GOOGLE_CLIENT_ID_DEFAULT.trim();
+            try { return (localStorage.getItem('dayflow_gclient') || '').trim(); } catch (e) { return ''; }
+        }
+        function pakaiGoogle() { return ambilClientId() !== ''; }
+        let googleToken = null, googleTokenExp = 0;
+
+        async function muatEmailGoogle(token) {
+            try {
+                const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (r.ok) { const u = await r.json(); googleEmail = u.email || ''; }
+            } catch (e) {}
+        }
+        async function hubungkanGoogle() {
+            try { await mintaTokenGoogle(); updateStatusGoogle(); }
+            catch (e) { tampilNotif(`⚠️ Gagal masuk Google (${esc(e.message)}).`); }
+        }
+        function updateStatusGoogle() {
+            const id = ambilClientId();
+            const kunciDeveloper = GOOGLE_CLIENT_ID_DEFAULT.trim() !== '';
+            let status;
+            if (!id) status = 'Belum diatur. Tugas disimpan sebagai file .ics.';
+            else if (googleEmail) status = `✅ Terhubung sebagai ${googleEmail}. Tugas langsung masuk Google Calendar beserta reminder.`;
+            else status = 'Klik "Masuk dengan Google" agar tugas langsung masuk Google Calendar.';
+            document.getElementById('gStatus').innerText = status;
+            document.getElementById('btnGLogin').classList.toggle('hidden', !id || !!googleEmail);
+            document.getElementById('btnGAtur').classList.toggle('hidden', kunciDeveloper);
+            if (kunciDeveloper) document.getElementById('gSetup').classList.add('hidden');
+            document.getElementById('gClientId').value = id;
+            document.getElementById('gOrigin').innerText = location.origin === 'null' ? '(file lokal)' : location.origin;
+            document.getElementById('gOriginWarn').classList.toggle('hidden', location.protocol !== 'file:');
+            renderTasks();
+        }
+        function simpanClientId() {
+            const v = document.getElementById('gClientId').value.trim();
+            if (!v || !/\.apps\.googleusercontent\.com$/.test(v)) {
+                alert('Client ID tidak valid. Formatnya berakhiran .apps.googleusercontent.com');
+                return;
+            }
+            try { localStorage.setItem('dayflow_gclient', v); } catch (e) {}
+            googleToken = null;
+            updateStatusGoogle();
+            document.getElementById('gSetup').classList.add('hidden');
+        }
+        function hapusClientId() {
+            try { localStorage.removeItem('dayflow_gclient'); } catch (e) {}
+            googleToken = null; googleEmail = '';
+            updateStatusGoogle();
+        }
+
+        (function setDefaultWaktu() {
+            const d = new Date(Date.now() + 60 * 60 * 1000);
+            document.getElementById('taskDate').value = getDateKey(d);
+            document.getElementById('taskTime').value = `${pad(d.getHours())}:00`;
+        })();
+
+        function mintaTokenGoogle() {
+            return new Promise((resolve, reject) => {
+                if (googleToken && Date.now() < googleTokenExp) return resolve(googleToken);
+                if (!window.google || !google.accounts || !google.accounts.oauth2) return reject(new Error('Library Google belum siap'));
+                const client = google.accounts.oauth2.initTokenClient({
+                    client_id: ambilClientId(),
+                    scope: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email',
+                    callback: async (resp) => {
+                        if (resp.error) return reject(new Error(resp.error));
+                        googleToken = resp.access_token;
+                        googleTokenExp = Date.now() + (parseInt(resp.expires_in) - 60) * 1000;
+                        await muatEmailGoogle(googleToken);
+                        updateStatusGoogle();
+                        resolve(googleToken);
+                    },
+                    error_callback: (err) => reject(new Error(err.type || 'Login Google dibatalkan'))
+                });
+                client.requestAccessToken();
+            });
+        }
+
+        async function kirimKeGoogleCalendar(t) {
+            const token = await mintaTokenGoogle();
+            const mulai = new Date(t.date.getFullYear(), t.date.getMonth(), t.date.getDate(), t.jam, t.menit);
+            const selesai = new Date(mulai.getTime() + 60 * 60 * 1000);
+            const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+            const body = {
+                summary: t.judul,
+                location: t.lokasi === '-' ? '' : t.lokasi,
+                description: 'Diatur oleh Dayflow',
+                start: { dateTime: iso(mulai), timeZone: TZ_NAME },
+                end: { dateTime: iso(selesai), timeZone: TZ_NAME },
+                reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: parseInt(t.reminder) }] }
+            };
+            const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            if (!res.ok) throw new Error('Google Calendar menolak permintaan (' + res.status + ')');
+            return res.json();
+        }
+
+        function namaFileICS(t) {
+            return `dayflow-${t.judul.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30) || 'tugas'}.ics`;
+        }
+
+        async function syncKalender(t) {
+            if (!t) return;
+            const reminderText = formatDurasi(t.reminder);
+            if (pakaiGoogle()) {
+                if (t.synced) { tampilNotif(`ℹ️ <b>"${esc(t.judul)}"</b> sudah ada di Google Calendar.`); return; }
+                try {
+                    await kirimKeGoogleCalendar(t);
+                    t.synced = true;
+                    tampilNotif(`✅ <b>"${esc(t.judul)}"</b> sudah masuk Google Calendar dengan reminder <b>${reminderText}</b> sebelumnya.`);
+                } catch (e) {
+                    console.warn('Google Calendar:', e);
+                    unduhFileICS([t], namaFileICS(t));
+                    tampilNotif(`⚠️ Gagal terhubung ke Google Calendar (${esc(e.message)}). File .ics diunduh sebagai gantinya, buka file itu untuk menambahkan tugas.`);
+                }
+            } else {
+                unduhFileICS([t], namaFileICS(t));
+                tampilNotif(`✅ <b>"${esc(t.judul)}"</b> tersimpan. File kalender (.ics) dengan reminder <b>${reminderText}</b> sebelumnya sudah diunduh. Buka file itu untuk menambahkannya ke Google Calendar.`);
+            }
+        }
+
+        async function simpanSemua() {
+            if (!currentTasks.length) return;
+            if (!pakaiGoogle()) { unduhSemuaICS(); return; }
+            for (const t of currentTasks) { if (!t.synced) await syncKalender(t); }
+        }
+
+        function simpanRiwayat(t) {
+            const key = getDateKey(t.date);
+            if (!historyData[key]) historyData[key] = [];
+            const sudahAda = historyData[key].some(h => h.acara === t.judul && h.jam === labelJam(t));
+            if (!sudahAda) {
+                historyData[key].push({ curhat: t.asli, acara: t.judul, jam: labelJam(t), lokasi: t.lokasi, reminder: formatDurasi(t.reminder) });
+            }
+            try { localStorage.setItem('dayflow_history', JSON.stringify(historyData)); } catch (e) {}
+        }
+
+        function prosesJadwal() {
+            const deskripsi = document.getElementById('userInput').value.trim();
+            const tglVal = document.getElementById('taskDate').value;
+            const jamVal = document.getElementById('taskTime').value;
+            const lokasiVal = document.getElementById('taskLokasi').value.trim();
+            const reminder = document.getElementById('reminderTime').value;
+
+            if (!deskripsi) { alert('Tulis dulu deskripsi tugasnya ya!'); return; }
+            if (!tglVal || !jamVal) { alert('Pilih tanggal dan jam-nya dulu ya!'); return; }
+
+            const [y, m, d] = tglVal.split('-').map(Number);
+            const [jam, menit] = jamVal.split(':').map(Number);
+            const t = {
+                judul: deskripsi.charAt(0).toUpperCase() + deskripsi.slice(1),
+                date: new Date(y, m - 1, d), jam, menit, jamDefault: false,
+                lokasi: lokasiVal || '-', reminder, asli: deskripsi
+            };
+            currentTasks.push(t);
+            currentTasks.sort((a, b) => (a.date - b.date) || (a.jam - b.jam) || (a.menit - b.menit));
+            renderTasks();
+            simpanRiwayat(t);
+            document.getElementById('userInput').value = '';
+            document.getElementById('taskLokasi').value = '';
+
+            syncKalender(t);
+            if (pushAktif) jadwalkanPush(t);
+        }
+
+        /* ===================== Modal Kalender ===================== */
+        let viewDate = new Date();
+        function bukaModalKalender() {
+            const modal = document.getElementById('calendarModal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            renderCalendar();
+        }
+        function tutupModalKalender() {
+            const modal = document.getElementById('calendarModal');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
+        }
+        function gantiBulan(delta) {
+            viewDate.setDate(1);
+            viewDate.setMonth(viewDate.getMonth() + delta);
+            renderCalendar();
+        }
+        function renderCalendar() {
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            document.getElementById('modalMonthYear').innerText = `${NAMA_BULAN[month]} ${year}`;
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            const todayKey = getDateKey(new Date());
+            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const key = getDateKey(new Date(year, month, day));
+                const hasEvent = historyData[key] && historyData[key].length > 0;
+                const isToday = key === todayKey;
+                grid.innerHTML += `
+                    <button onclick="lihatRiwayatTanggal('${key}', '${day} ${NAMA_BULAN[month]} ${year}')"
+                        class="relative h-10 rounded-xl text-xs font-bold flex flex-col items-center justify-center transition cursor-pointer border
+                        ${isToday ? 'theme-accent-bg text-white border-transparent' : 'theme-sub hover:opacity-80'}">
+                        <span>${day}</span>
+                        ${hasEvent ? `<span class="w-1.5 h-1.5 rounded-full ${isToday ? 'bg-white' : 'theme-accent-bg'} mt-0.5"></span>` : ''}
+                    </button>`;
+            }
+        }
+        function lihatRiwayatTanggal(key, labelTgl) {
+            document.getElementById('selectedDateLabel').innerText = `Riwayat Tugas Tanggal: ${labelTgl}`;
+            const box = document.getElementById('historyDetailBox');
+            const items = historyData[key];
+            if (!items || items.length === 0) {
+                box.innerHTML = `<div class="theme-sub rounded-xl p-3 theme-text-muted text-center">Belum ada tugas atau deadline di tanggal ini.</div>`;
+                return;
+            }
+            let html = `<div class="theme-accent-soft rounded-xl p-2.5 mb-2 text-[11px]"><b>💬 Catatan / Curhatanmu:</b> "${esc(items[0].curhat)}"</div>`;
+            items.forEach(item => {
+                html += `
+                    <div class="theme-sub border rounded-xl p-3">
+                        <div class="flex justify-between font-bold"><span>${esc(item.acara)}</span><span>${esc(item.jam)}</span></div>
+                        <p class="theme-text-muted mt-1">📍 ${esc(item.lokasi)} • ⏰ Reminder ${esc(item.reminder)} sebelumnya</p>
+                    </div>`;
+            });
+            box.innerHTML = html;
+        }
+
+        /* ===================== Popup info ===================== */
+        function tampilNotif(htmlPesan) {
+            const popup = document.getElementById('waPopup');
+            document.getElementById('waMessage').innerHTML = htmlPesan;
+            popup.classList.remove('hidden');
+            setTimeout(() => popup.classList.remove('translate-y-10', 'opacity-0'), 100);
+        }
+        function tutupNotif() {
+            const popup = document.getElementById('waPopup');
+            popup.classList.add('translate-y-10', 'opacity-0');
+            setTimeout(() => popup.classList.add('hidden'), 300);
+        }
+
+        /* ===================== Web Push (PWA) ===================== */
+        const PUSH_API = '/.netlify/functions/push';
+        const IS_IOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        const IS_STANDALONE = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+        const AMAN = location.protocol === 'https:' || location.hostname === 'localhost';
+        const PUSH_DIDUKUNG = AMAN && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+        let pushAktif = false;
+
+        function b64ToU8(b64) {
+            const s = (b64 + '='.repeat((4 - b64.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+            return Uint8Array.from(atob(s), c => c.charCodeAt(0));
+        }
+        async function ambilSub() {
+            const reg = await navigator.serviceWorker.ready;
+            return reg.pushManager.getSubscription();
+        }
+
+        async function updateStatusPush() {
+            const el = document.getElementById('pushStatus');
+            const on = document.getElementById('btnPushOn'), tes = document.getElementById('btnPushTes'), off = document.getElementById('btnPushOff');
+            document.getElementById('pushIosHint').classList.toggle('hidden', !(IS_IOS && !IS_STANDALONE));
+            pushAktif = false;
+            if (!PUSH_DIDUKUNG) {
+                el.innerText = !AMAN ? 'Notifikasi butuh alamat https (atau localhost). Buka lewat hosting.'
+                    : (IS_IOS && !IS_STANDALONE ? 'Di iPhone, pasang Dayflow ke Layar Utama dulu (lihat petunjuk di bawah).' : 'Browser ini belum mendukung notifikasi push.');
+                on.classList.toggle('hidden', !(IS_IOS && !IS_STANDALONE)); tes.classList.add('hidden'); off.classList.add('hidden');
+                return;
+            }
+            if (Notification.permission === 'denied') {
+                el.innerText = '⛔ Notifikasi diblokir. Izinkan lewat pengaturan situs di browser, lalu muat ulang.';
+                on.classList.add('hidden'); tes.classList.add('hidden'); off.classList.add('hidden');
+                return;
+            }
+            try { pushAktif = Notification.permission === 'granted' && !!(await ambilSub()); } catch (e) {}
+            el.innerText = pushAktif ? '✅ Aktif di perangkat ini. Pengingat tugas akan muncul sebagai notifikasi.' : 'Aktifkan agar pengingat muncul sebagai notifikasi di perangkat ini.';
+            on.classList.toggle('hidden', pushAktif); tes.classList.toggle('hidden', !pushAktif); off.classList.toggle('hidden', !pushAktif);
+        }
+
+        async function aktifkanPush() {
+            if (!PUSH_DIDUKUNG) { updateStatusPush(); return; }
+            try {
+                const izin = await Notification.requestPermission();
+                if (izin !== 'granted') { tampilNotif('⚠️ Izin notifikasi tidak diberikan, jadi pengingat tidak bisa muncul.'); updateStatusPush(); return; }
+                const reg = await navigator.serviceWorker.ready;
+                const cfg = await (await fetch(PUSH_API)).json();
+                if (!cfg.publicKey) throw new Error('server belum diatur');
+                let sub = await reg.pushManager.getSubscription();
+                if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(cfg.publicKey) });
+                await updateStatusPush();
+                tampilNotif('✅ Notifikasi aktif. Tugas yang kamu atur akan mengingatkanmu lewat notifikasi.');
+            } catch (e) {
+                tampilNotif(`⚠️ Gagal mengaktifkan notifikasi (${esc(e.message)}).`);
+                updateStatusPush();
+            }
+        }
+        async function matikanPush() {
+            try { const sub = await ambilSub(); if (sub) await sub.unsubscribe(); } catch (e) {}
+            currentTasks.forEach(t => { delete t.pushId; delete t.pushStatus; });
+            await updateStatusPush();
+            renderTasks();
+        }
+        async function tesPush() {
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                await reg.showNotification('✦ Dayflow', { body: 'Tes berhasil! Pengingat tugasmu akan muncul seperti ini.', icon: '/icons/icon-192.png', badge: '/icons/icon-192.png' });
+            } catch (e) { tampilNotif(`⚠️ Tes gagal (${esc(e.message)}).`); }
+        }
+
+        async function jadwalkanPush(t) {
+            if (!pushAktif) { t.pushStatus = 'aktifkan notifikasi dulu'; renderTasks(); return false; }
+            if (t.pushId) return true;
+            t.pushStatus = 'menjadwalkan...'; renderTasks();
+            const mulai = new Date(t.date.getFullYear(), t.date.getMonth(), t.date.getDate(), t.jam, t.menit);
+            try {
+                const sub = await ambilSub();
+                if (!sub) throw new Error('belum berlangganan');
+                const res = await fetch(PUSH_API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subscription: sub.toJSON(),
+                        judul: t.judul,
+                        lokasi: t.lokasi === '-' ? '' : t.lokasi,
+                        startIso: mulai.toISOString(),
+                        reminder: parseInt(t.reminder),
+                        waktuLabel: `${labelTanggal(t.date)} ${t.date.getFullYear()}, jam ${labelJam(t)} ${tzLabel}`
+                    })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.ok) throw new Error(data.error || `server membalas ${res.status}`);
+                t.pushId = data.id;
+                t.pushStatus = data.terjadwal ? `terjadwal, muncul ${formatDurasi(t.reminder)} sebelum acara` : 'waktu pengingat sudah lewat, notifikasi dikirim sekarang';
+                renderTasks();
+                return true;
+            } catch (e) {
+                t.pushStatus = `gagal (${e.message})`;
+                renderTasks();
+                return false;
+            }
+        }
+        async function kirimPush(i) {
+            const t = currentTasks[i];
+            if (!t) return;
+            if (!pushAktif) { tampilNotif('🔔 Aktifkan notifikasi dulu di kartu "Notifikasi Pengingat".'); return; }
+            if (t.pushId) { tampilNotif(`ℹ️ Notifikasi untuk <b>"${esc(t.judul)}"</b> sudah dijadwalkan.`); return; }
+            const ok = await jadwalkanPush(t);
+            tampilNotif(ok ? `✅ Notifikasi untuk <b>"${esc(t.judul)}"</b> berhasil dijadwalkan.` : `⚠️ Notifikasi belum terjadwal. ${esc(t.pushStatus || '')}`);
+        }
+        async function batalPush(t) {
+            if (!t || !t.pushId || !PUSH_DIDUKUNG) return;
+            try {
+                const sub = await ambilSub();
+                if (sub) await fetch(PUSH_API, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: t.pushId, endpoint: sub.endpoint }) });
+            } catch (e) {}
+        }
+
+        if (AMAN && 'serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(e => console.warn('Service worker gagal:', e));
+        }
+
+        updateStatusGoogle();
+        updateStatusPush();
+    </script>
+</body>
+</html>
